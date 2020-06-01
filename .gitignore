@@ -1,6 +1,6 @@
 **/BACK_UP
 /build*
-/deploy
+/*deploy
 /TestFiles
 **/*.zip
 /fragments

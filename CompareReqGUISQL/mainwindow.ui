@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1191</width>
-    <height>683</height>
+    <width>1059</width>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,11 +60,11 @@
       </layout>
      </item>
      <item>
-      <widget class="QTabWidget" name="tabWidget">
+      <widget class="QTabWidget" name="tabWidget_Results">
        <property name="currentIndex">
         <number>3</number>
        </property>
-       <widget class="QWidget" name="tab">
+       <widget class="QWidget" name="pageCompare">
         <attribute name="title">
          <string>COMPARE</string>
         </attribute>
@@ -81,7 +81,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_2">
+       <widget class="QWidget" name="pageOld">
         <attribute name="title">
          <string>OLD</string>
         </attribute>
@@ -91,7 +91,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_3">
+       <widget class="QWidget" name="pageNew">
         <attribute name="title">
          <string>NEW</string>
         </attribute>
@@ -101,7 +101,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="tab_4">
+       <widget class="QWidget" name="pageQuery">
         <attribute name="title">
          <string>QUERY</string>
         </attribute>
@@ -113,10 +113,92 @@
              <item>
               <widget class="QLineEdit" name="lineEdit_Query"/>
              </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_12">
              <item>
-              <widget class="QPushButton" name="btn_ExecQuery">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QPushButton" name="btn_ClearQueryLine">
+                 <property name="maximumSize">
+                  <size>
+                   <width>80</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>CLEAR</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_ExecQuery">
+                 <property name="maximumSize">
+                  <size>
+                   <width>80</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>EXEC</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label">
                <property name="text">
-                <string>EXEC</string>
+                <string>COMMAND</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="listWidget_Commands">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>OLD COL.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="listWidget_oldColumns">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>NEW COL.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="listWidget_newColumns">
+               <property name="maximumSize">
+                <size>
+                 <width>200</width>
+                 <height>16777215</height>
+                </size>
                </property>
               </widget>
              </item>
@@ -254,12 +336,18 @@
            <property name="text">
             <string>Use Original ID</string>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="cb_Reserve1">
+          <widget class="QCheckBox" name="cb_DetectOriginalID">
            <property name="text">
-            <string>Reserve1</string>
+            <string>Detect Original ID</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

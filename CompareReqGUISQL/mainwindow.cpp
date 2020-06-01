@@ -123,7 +123,6 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
 
       ui->tableWidget_Changes->setColumnCount(tableHeader.count());
       ui->tableWidget_Changes->setHorizontalHeaderLabels(tableHeader);
-      EmptyChangesTable();
 
 
 
@@ -206,6 +205,13 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
      modelNew =  new QSqlTableModel(this, db_Req);
      modelUserQuery = new QSqlQueryModel();
 
+
+     EmptyChangesTable();
+
+     //set visible "compare" page in result tab
+     ui->tabWidget_Results->setCurrentWidget(ui->pageCompare);
+
+
 }
 
 
@@ -240,6 +246,18 @@ void MainWindow::EmptyChangesTable()
      }
      ui->tableWidget_Changes->setRowCount(0);
      ui->btnWrite->setEnabled(false);
+
+    QSqlQuery dbQuery(db_Req);
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tOLD");
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tNEW");
+    ui->listWidget_oldColumns->clear();
+    ui->listWidget_newColumns->clear();
+    ui->listWidget_Commands->clear();
+    modelUserQuery->clear();
+    ui->tableView_Query->setModel(modelUserQuery);
+
+
+
 }
 
 
@@ -572,6 +590,9 @@ void MainWindow::on_lineEdit_OldReq_textEdited(const QString &arg1)
 
 void MainWindow::on_btnCompare_clicked()
 {
+    //set visible "compare" page in result tab
+    ui->tabWidget_Results->setCurrentWidget(ui->pageCompare);
+
     fileName_NewReq = ui->lineEdit_NewReq->text();
     fileName_OldReq = ui->lineEdit_OldReq->text();
 
@@ -659,7 +680,6 @@ void MainWindow::on_btnCompare_clicked()
 
     //disable sorting
     ui->tableWidget_Changes->setSortingEnabled(false);
-
     //close detail
     detailView->close();
 
@@ -690,8 +710,17 @@ void MainWindow::on_btnCompare_clicked()
     for(int col= kn_ReqIDCol; col <= newLastCol; col++)
     {
       QString asTemp = getCellValue(kn_HeaderRow, col, newReqDoc, true);
-      mapNewHeaders[asTemp] = col;
+      if (ui->cb_DetectOriginalID->isChecked())
+      {
+         QString asSimple = asTemp.simplified();
+         asSimple = asSimple.toLower();
+         asSimple.replace(" ","");
+         if(asSimple.contains("idoriginal")) asTemp = "ID Original (DXL)";
+
+      }
       lstNewHeaders << asTemp;
+      mapNewHeaders[asTemp] = col;
+
       if(ignoreWhiteAndCase(asTemp) == "object type")
       {
         iNewColObjectType = col;
@@ -707,8 +736,17 @@ void MainWindow::on_btnCompare_clicked()
     for(int col= kn_ReqIDCol; col <= oldLastCol; col++)
     {
         QString asTemp = getCellValue(kn_HeaderRow, col, oldReqDoc, true);
+        if (ui->cb_DetectOriginalID->isChecked())
+        {
+            QString asSimple = asTemp.simplified();
+            asSimple = asSimple.toLower();
+            asSimple.replace(" ","");
+            if(asSimple.contains("idoriginal")) asTemp = "ID Original (DXL)";
+
+        }
         lstOldHeaders << asTemp;
         mapOldHeaders[asTemp] = col;
+
         if(ignoreWhiteAndCase(asTemp) == "object type")
         {
           iOldColObjectType = col;
@@ -742,6 +780,9 @@ void MainWindow::on_btnCompare_clicked()
 
     //Create database table OLD
     QSqlQuery dbQuery(db_Req);
+
+    ui->tableView_Old->setSortingEnabled(false);
+    ui->listWidget_oldColumns->clear();
     boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tOLD");
     boGenResult = dbQuery.exec("CREATE TABLE tOLD (rowid INTEGER PRIMARY KEY)");
     qDebug() <<"Create" << boGenResult;
@@ -749,6 +790,7 @@ void MainWindow::on_btnCompare_clicked()
     {
        boGenResult = dbQuery.exec("ALTER TABLE tOLD ADD \""+asColumnName+"\" VARCHAR" );
        qDebug() <<"Add" << asColumnName << boGenResult;
+       ui->listWidget_oldColumns->addItem("`"+asColumnName+"`");
     }
 
     //insert data to OLD
@@ -792,13 +834,25 @@ void MainWindow::on_btnCompare_clicked()
       }
     }
 
-
     //show in table OLD
     modelOld->setTable("tOLD");
     modelOld->select();
     ui->tableView_Old->setModel(modelOld);
 
+    //adapt column with OLD
+    ui->tableView_Old->resizeColumnsToContents();
+    for(int i=0; i<ui->tableView_Old->model()->columnCount(); i++)
+    {
+     if(ui->tableView_Old->columnWidth(i) > knMAX_VIEW_COLUMN_WIDTH)
+       ui->tableView_Old->setColumnWidth(i, knMAX_VIEW_COLUMN_WIDTH);
+    }
+    ui->tableView_Old->setSortingEnabled(true);
+
+
+
     //Create database table NEW
+    ui->tableView_New->setSortingEnabled(false);
+    ui->listWidget_newColumns->clear();
     boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tNEW");
     boGenResult = dbQuery.exec("CREATE TABLE tNEW (rowid INTEGER PRIMARY KEY)");
     qDebug() <<"Create" << boGenResult;
@@ -806,6 +860,7 @@ void MainWindow::on_btnCompare_clicked()
     {
        boGenResult = dbQuery.exec("ALTER TABLE tNEW ADD \""+asColumnName+"\" VARCHAR" );
        qDebug() <<"Add" << asColumnName << boGenResult;
+       ui->listWidget_newColumns->addItem("`"+asColumnName+"`");
     }
 
 
@@ -854,6 +909,30 @@ void MainWindow::on_btnCompare_clicked()
     modelNew->setTable("tNEW");
     modelNew->select();
     ui->tableView_New->setModel(modelNew);
+
+    ui->tableView_New->resizeColumnsToContents();
+    for(int i=0; i<ui->tableView_New->model()->columnCount(); i++)
+    {
+      if(ui->tableView_New->columnWidth(i) > knMAX_VIEW_COLUMN_WIDTH)
+        ui->tableView_New->setColumnWidth(i, knMAX_VIEW_COLUMN_WIDTH);
+    }
+    ui->tableView_New->setSortingEnabled(true);
+
+
+    //insert key word to list for SQL query
+    ui->listWidget_Commands->clear();
+    ui->listWidget_Commands->addItem("SELECT");
+    ui->listWidget_Commands->addItem("*");
+    ui->listWidget_Commands->addItem("FROM");
+    ui->listWidget_Commands->addItem("tNEW");
+    ui->listWidget_Commands->addItem("tOLD");
+    ui->listWidget_Commands->addItem("WHERE");
+    ui->listWidget_Commands->addItem("'");
+    ui->listWidget_Commands->addItem("=");
+    ui->listWidget_Commands->addItem("ORDER");
+    ui->listWidget_Commands->addItem("BY");
+    ui->listWidget_Commands->addItem("ASC");
+    ui->listWidget_Commands->addItem("DESC");
 
 
     //START COMPARING - FIRST LOOK TO THE OLD FILES...
@@ -1175,6 +1254,7 @@ void MainWindow::on_btnCompare_clicked()
     //enable sorting
     //ui->tableWidget_Changes->setSortingEnabled(true);
 
+
     if (!boBatchProcessing)
     {
         QMessageBox::information(this, "Compared", "Lines: " + QString::number(ui->tableWidget_Changes->rowCount()), QMessageBox::Ok);
@@ -1195,8 +1275,8 @@ void MainWindow::on_btnCompare_clicked()
     if(ui->cb_IgnoreID->isChecked())            asCompareCondition += ":Ignore ID:";
     if(ui->cb_HideMissing->isChecked())         asCompareCondition += ":Hide Missing:";
     if(ui->cb_HideNew->isChecked())             asCompareCondition += ":Hide New:";
-    if(ui->cb_UseOriginalID->isChecked())         asCompareCondition += ":Use Origin ID:";
-    if(ui->cb_Reserve1->isChecked())             asCompareCondition += ":Reserve 1:";
+    if(ui->cb_UseOriginalID->isChecked())       asCompareCondition += ":Use Original ID:";
+    if(ui->cb_DetectOriginalID->isChecked())    asCompareCondition += ":Detect Original ID:";
     if(boBatchProcessing)                       asCompareCondition += ":Batch Processing:";
 
 //Try to find if some req with differnt ID did not match in some parts
@@ -1392,17 +1472,53 @@ void MainWindow::on_btn_SortReq_clicked()
 
 void MainWindow::on_btn_ExecQuery_clicked()
 {
+
+    ui->tableView_Query->setSortingEnabled(false);
+
     QString asQueryText = ui->lineEdit_Query->text();
     QSqlQuery userQuery(db_Req);
     bool boResult = userQuery.exec(asQueryText);
     if(!boResult)
     {
       QMessageBox::information(this, "Result", userQuery.lastError().text(), QMessageBox::Ok);
+      modelUserQuery->clear();
+      ui->tableView_Query->setModel(modelUserQuery);
     }
     else
     {
       modelUserQuery->setQuery(userQuery);
       ui->tableView_Query->setModel(modelUserQuery);
+      ui->tableView_Query->resizeColumnsToContents();
+      for(int i=0; i<ui->tableView_Query->model()->columnCount(); i++)
+      {
+        if(ui->tableView_Query->columnWidth(i) > knMAX_VIEW_COLUMN_WIDTH)
+          ui->tableView_Query->setColumnWidth(i, knMAX_VIEW_COLUMN_WIDTH);
+      }
+      //ui->tableView_Query->setSortingEnabled(true);  //not working - you have to subclass and
     }
+}
 
+void MainWindow::on_listWidget_Commands_itemClicked(QListWidgetItem *item)
+{
+  addTextToQueryLine(item->text());
+}
+
+void MainWindow::on_listWidget_oldColumns_itemClicked(QListWidgetItem *item)
+{
+    addTextToQueryLine(item->text());
+}
+
+void MainWindow::on_listWidget_newColumns_itemClicked(QListWidgetItem *item)
+{
+    addTextToQueryLine(item->text());
+}
+
+void MainWindow::addTextToQueryLine(QString asToAdd)
+{
+  ui->lineEdit_Query->setText(ui->lineEdit_Query->text() + asToAdd + " ");
+}
+
+void MainWindow::on_btn_ClearQueryLine_clicked()
+{
+   ui->lineEdit_Query->clear();
 }

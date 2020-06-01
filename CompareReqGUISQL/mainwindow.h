@@ -13,6 +13,7 @@
 #include <QSqlTableModel>
 #include <QSqlQueryModel>
 #include <QSqlError>
+#include <QListWidgetItem>
 
 
 #include "xlsxdocument.h"
@@ -73,6 +74,14 @@ private slots:
 
     void on_btn_ExecQuery_clicked();
 
+    void on_listWidget_Commands_itemClicked(QListWidgetItem *item);
+
+    void on_listWidget_oldColumns_itemClicked(QListWidgetItem *item);
+
+    void on_listWidget_newColumns_itemClicked(QListWidgetItem *item);
+
+    void on_btn_ClearQueryLine_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -102,6 +111,7 @@ private:
     QSqlTableModel *modelNew;
     QSqlTableModel *modelOld;
     QSqlQueryModel *modelUserQuery;
+    void addTextToQueryLine(QString asToAdd);
 };
 
 
@@ -133,7 +143,7 @@ private:
 #define knExitStatusCorrectedFileOpened     6
 
 #define knOrigIDText     ("Original Old ID")
-
+#define knMAX_VIEW_COLUMN_WIDTH            400
 
 
 #endif // MAINWINDOW_H
