@@ -169,6 +169,13 @@
               </widget>
              </item>
              <item>
+              <widget class="QCheckBox" name="cb_AddTableNameToColName">
+               <property name="text">
+                <string>Add Table Name</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QLabel" name="label_2">
                <property name="text">
                 <string>OLD COL.</string>

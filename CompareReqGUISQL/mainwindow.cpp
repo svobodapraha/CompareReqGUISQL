@@ -790,7 +790,7 @@ void MainWindow::on_btnCompare_clicked()
     {
        boGenResult = dbQuery.exec("ALTER TABLE tOLD ADD \""+asColumnName+"\" VARCHAR" );
        qDebug() <<"Add" << asColumnName << boGenResult;
-       ui->listWidget_oldColumns->addItem("`"+asColumnName+"`");
+       ui->listWidget_oldColumns->addItem(asColumnName);
     }
 
     //insert data to OLD
@@ -860,7 +860,7 @@ void MainWindow::on_btnCompare_clicked()
     {
        boGenResult = dbQuery.exec("ALTER TABLE tNEW ADD \""+asColumnName+"\" VARCHAR" );
        qDebug() <<"Add" << asColumnName << boGenResult;
-       ui->listWidget_newColumns->addItem("`"+asColumnName+"`");
+       ui->listWidget_newColumns->addItem(asColumnName);
     }
 
 
@@ -924,15 +924,21 @@ void MainWindow::on_btnCompare_clicked()
     ui->listWidget_Commands->addItem("SELECT");
     ui->listWidget_Commands->addItem("*");
     ui->listWidget_Commands->addItem("FROM");
-    ui->listWidget_Commands->addItem("tNEW");
-    ui->listWidget_Commands->addItem("tOLD");
+    ui->listWidget_Commands->addItem("`tNEW`");
+    ui->listWidget_Commands->addItem("`tOLD`");
     ui->listWidget_Commands->addItem("WHERE");
+    ui->listWidget_Commands->addItem("JOIN");
+    ui->listWidget_Commands->addItem("LEFT JOIN");
+    ui->listWidget_Commands->addItem("INNER JOIN");
+    ui->listWidget_Commands->addItem("ON");
     ui->listWidget_Commands->addItem("'");
+    ui->listWidget_Commands->addItem("`");
     ui->listWidget_Commands->addItem("=");
     ui->listWidget_Commands->addItem("ORDER");
     ui->listWidget_Commands->addItem("BY");
     ui->listWidget_Commands->addItem("ASC");
     ui->listWidget_Commands->addItem("DESC");
+    ui->listWidget_Commands->addItem("AS");
 
 
     //START COMPARING - FIRST LOOK TO THE OLD FILES...
@@ -1500,22 +1506,28 @@ void MainWindow::on_btn_ExecQuery_clicked()
 
 void MainWindow::on_listWidget_Commands_itemClicked(QListWidgetItem *item)
 {
-  addTextToQueryLine(item->text());
+    addTextToQueryLine(item->text());
 }
 
 void MainWindow::on_listWidget_oldColumns_itemClicked(QListWidgetItem *item)
 {
-    addTextToQueryLine(item->text());
+    QString asToAdd = "`"+ item->text() + "`";
+    if(ui->cb_AddTableNameToColName->isChecked())
+        asToAdd = "`tOLD`."+ asToAdd;
+    addTextToQueryLine(asToAdd);
 }
 
 void MainWindow::on_listWidget_newColumns_itemClicked(QListWidgetItem *item)
 {
-    addTextToQueryLine(item->text());
+    QString asToAdd = "`"+ item->text() + "`";
+    if(ui->cb_AddTableNameToColName->isChecked())
+        asToAdd = "`tNEW`."+ asToAdd;
+    addTextToQueryLine(asToAdd);
 }
 
 void MainWindow::addTextToQueryLine(QString asToAdd)
 {
-  ui->lineEdit_Query->setText(ui->lineEdit_Query->text() + asToAdd + " ");
+  ui->lineEdit_Query->insert(asToAdd + " ");
 }
 
 void MainWindow::on_btn_ClearQueryLine_clicked()
