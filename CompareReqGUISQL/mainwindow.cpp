@@ -61,6 +61,124 @@ QString ignoreWhiteAndCase(QString asValue)
     return asValue;
 }
 
+int CsvToExcel(QString fileNameCsv, QXlsx::Document &xlsxDocument)
+{
+    //7.6.2020 TODO .. include /r to text inside the quotes...until now not working...
+
+    //Open file and convert it to QTextStrem
+
+    QFile inputFile(fileNameCsv);
+    if(!inputFile.open(QIODevice::ReadOnly))
+    {
+        return(knExitStatusCannotLoadInputCsvFiles);
+    }
+    QTextStream inputStream(&inputFile);
+
+
+    //List of column lists
+    QList <QStringList> lsCSVDoc;
+    lsCSVDoc.clear();
+
+    //Column list
+    QStringList lstOneRowFields;
+    lstOneRowFields.clear();
+
+    QString asDelimiter = ";";
+    QString asCurrentField = "";
+    QString oneChar;
+
+    //iterate over the characters
+    bool boInQuotes = false;
+    bool boQuotesInQuotes = false;
+    bool boNewLine = false;
+    lstOneRowFields.clear();
+    while (!inputStream.atEnd())
+    {
+        boNewLine = false;
+        oneChar = inputStream.read(1);
+        if(oneChar == "\r") continue;
+
+        //last character is " after quote section. Could be end of quote or escape for "
+        if (boQuotesInQuotes)
+        {
+            if (oneChar == "\"")
+            {
+               boQuotesInQuotes = false;
+               asCurrentField+=oneChar;
+               continue;
+            }
+            else
+            {
+                 boQuotesInQuotes = false;
+                 boInQuotes = false;
+            }
+        }
+        else
+        {
+
+        }
+
+        if (!boInQuotes && oneChar == "\"" )
+        {
+             boInQuotes = true;
+        }
+        else if (boInQuotes && oneChar== "\"" )
+        {
+            boQuotesInQuotes = true;
+        }
+        else if (!boInQuotes && oneChar == asDelimiter)
+        {
+            lstOneRowFields << asCurrentField;
+            asCurrentField.clear();
+        }
+        else if (!boInQuotes && (oneChar == "\n"))
+        {
+            lstOneRowFields << asCurrentField;
+            asCurrentField.clear();
+            boNewLine = true;
+            //new row
+            lsCSVDoc << lstOneRowFields;
+            lstOneRowFields.clear();
+        }
+        else
+        {
+            //do not add CR if it is outside of quoted text: if(!(!boInQuotes &&  oneChar == "\r"))  asCurrentField+=oneChar;
+            asCurrentField+=oneChar;
+        }
+
+    }
+
+    //if last LF in file is missing
+    if(!boNewLine)
+    {
+      lstOneRowFields << asCurrentField;
+      asCurrentField.clear();
+      //new row
+      lsCSVDoc << lstOneRowFields;
+      lstOneRowFields.clear();
+    }
+
+
+    //write to Excel document
+    int iCitacFields = 0;
+    int iCitacRow = 0;
+    Format text_num_format;
+    text_num_format.setNumberFormat("@");
+    foreach (QStringList lstRow, lsCSVDoc)
+    {
+        iCitacRow++;
+        iCitacFields = 0;
+        foreach (QString asItem, lstRow)
+        {
+            iCitacFields++;
+            xlsxDocument.write(iCitacRow, iCitacFields, asItem, text_num_format);
+            qDebug() <<  iCitacRow  << QChar(64+iCitacFields) << ":" << asItem;
+        }
+    }
+
+    return 0;
+}
+
 
 
 
@@ -534,7 +652,7 @@ void MainWindow::on_btnNewReq_clicked()
       this,
       "Open New Requirements",
       newReqFileLastPath,
-      "Excel Files (*.xlsx)"
+      "Excel Files (*.xlsx; *.csv)"
     );
 
     if(!fileName_NewReq.isEmpty() && !fileName_NewReq.isNull())
@@ -567,7 +685,7 @@ void MainWindow::on_btnOldReq_clicked()
       this,
       "Open Old Requirements",
       oldReqFileLastPath,
-      "Excel Files (*.xlsx)"
+      "Excel Files (*.xlsx; *.csv)"
     );
 
     if(!fileName_OldReq.isEmpty() && !fileName_OldReq.isNull())
@@ -621,23 +739,89 @@ void MainWindow::on_btnCompare_clicked()
 
 
 
-    QXlsx::Document newReqDoc(fileName_NewReq);
-    QXlsx::Document oldReqDoc(fileName_OldReq);
+    //Load the new document or convert it from csv file
+    QXlsx::Document  newReqDoc(fileName_NewReq);
 
-    if (!newReqDoc.load() || !oldReqDoc.load())
+    if(QFileInfo(fileName_NewReq).suffix().toLower() == "csv")
     {
-        if (!boBatchProcessing)
-        {
-            QMessageBox::information(this, "Problem", "Problem to load files", QMessageBox::Ok);
-        }
-        else
-        {
-            qCritical() << "Error: " << "Can not load input files";
-            iExitCode = knExitStatusCannotLoadInputFiles;
-        }
-
-        return;
+       int iResult = CsvToExcel(fileName_NewReq, newReqDoc);
+       if(iResult)
+       {
+           if (!boBatchProcessing)
+           {
+               QMessageBox::information(this, "Problem", "Problem to load new csv file", QMessageBox::Ok);
+           }
+           else
+           {
+               qCritical() << "Error: " << "Problem to load new csv files";
+               iExitCode = iResult;
+           }
+           return;
+       }
     }
+    else
+    {
+       if (!newReqDoc.load())
+       {
+           if (!boBatchProcessing)
+           {
+               QMessageBox::information(this, "Problem", "Problem to load new file", QMessageBox::Ok);
+           }
+           else
+           {
+               qCritical() << "Error: " << "Can not load new input file";
+               iExitCode = knExitStatusCannotLoadInputFiles;
+           }
+
+           return;
+       }
+    }
+
+    //newReqDoc.saveAs("pn.xlsx");  //DEBUG CODE
+
+    //Load the old document or convert it from csv file
+    QXlsx::Document  oldReqDoc(fileName_OldReq);
+
+    if(QFileInfo(fileName_OldReq).suffix().toLower() == "csv")
+    {
+       int iResult = CsvToExcel(fileName_OldReq, oldReqDoc);
+       if(iResult)
+       {
+           if (!boBatchProcessing)
+           {
+               QMessageBox::information(this, "Problem", "Problem to load old csv file", QMessageBox::Ok);
+           }
+           else
+           {
+               qCritical() << "Error: " << "Problem to load old csv files";
+               iExitCode = iResult;
+           }
+           return;
+       }
+    }
+    else
+    {
+       if (!oldReqDoc.load())
+       {
+           if (!boBatchProcessing)
+           {
+               QMessageBox::information(this, "Problem", "Problem to load old file", QMessageBox::Ok);
+           }
+           else
+           {
+               qCritical() << "Error: " << "Can not load old input files";
+               iExitCode = knExitStatusCannotLoadInputFiles;
+           }
+
+           return;
+       }
+    }
+
+    //oldReqDoc.saveAs("po.xlsx");  //DEBUG CODE
+
+
+
+
 
     //save paths to ini file
     iniSettings->setValue("paths/newReqFileLastPath", newReqFileLastPath);

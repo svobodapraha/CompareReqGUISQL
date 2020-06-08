@@ -141,6 +141,7 @@ private:
 #define knExitStatusCannotLoadInputFiles    4
 #define knExitStatusNoResultDoc             5
 #define knExitStatusCorrectedFileOpened     6
+#define knExitStatusCannotLoadInputCsvFiles 7
 
 #define knOrigIDText     ("Original Old ID")
 #define knMAX_VIEW_COLUMN_WIDTH            400
