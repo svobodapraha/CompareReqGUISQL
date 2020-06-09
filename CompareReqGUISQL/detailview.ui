@@ -59,6 +59,13 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="btnDiff">
+        <property name="text">
+         <string>DIFF WITH WINMERGE</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="btnCopyToClipboard">
         <property name="text">
          <string>COPY TO CLPIPBOARD</string>

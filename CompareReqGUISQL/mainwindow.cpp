@@ -226,6 +226,16 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
     {
     }
 
+    VarTemp = iniSettings->value("extTools/WinMerge");
+    if (VarTemp.isValid())
+    {
+      detailView->asWinMergePath = VarTemp.toString();
+    }
+    else
+    {
+      detailView->asWinMergePath = WIN_MERGE_LOCATION;
+    }
+
 
     //set query table header
       QStringList tableHeader = QStringList() <<"Sel."

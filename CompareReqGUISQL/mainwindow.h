@@ -145,6 +145,8 @@ private:
 
 #define knOrigIDText     ("Original Old ID")
 #define knMAX_VIEW_COLUMN_WIDTH            400
+#define WIN_MERGE_LOCATION   "c:\\Program Files (x86)\\WinMerge\\WinMergeU.exe"
+
 
 
 #endif // MAINWINDOW_H

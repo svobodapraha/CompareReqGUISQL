@@ -3,6 +3,9 @@
 
 #include <QDialog>
 #include <QDebug>
+#include <QSaveFile>
+#include <QProcess>
+#include <QTemporaryFile>
 
 namespace Ui {
 class DetailView;
@@ -18,6 +21,8 @@ public:
 
     void setTexts(QString oldText, QString newText);
     void setReqID(QString reqID);
+    QString asWinMergePath;
+
 private slots:
 
 
@@ -25,8 +30,14 @@ private slots:
 
     void on_btnClose_clicked();
 
+    void on_btnDiff_clicked();
+
 private:
     Ui::DetailView *ui;
+    //ext compare stuff
+     QTemporaryFile newFileForCompare;
+     QTemporaryFile oldFileForCompare;
+
 };
 
 #endif // DETAILVIEW_H
