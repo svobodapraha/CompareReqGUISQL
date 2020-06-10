@@ -61,6 +61,15 @@ QString ignoreWhiteAndCase(QString asValue)
     return asValue;
 }
 
+QString ignoreWhiteCaseAndSpaces(QString asValue)
+{
+    asValue = asValue.simplified();
+    asValue = asValue.toLower();
+    asValue.replace(" ","");
+
+    return asValue;
+}
+
 int CsvToExcel(QString fileNameCsv, QXlsx::Document &xlsxDocument)
 {
     //7.6.2020 TODO .. include /r to text inside the quotes...until now not working...
@@ -172,7 +181,7 @@ int CsvToExcel(QString fileNameCsv, QXlsx::Document &xlsxDocument)
         {
             iCitacFields++;
             xlsxDocument.write(iCitacRow, iCitacFields, asItem, text_num_format);
-            qDebug() <<  iCitacRow  << QChar(64+iCitacFields) << ":" << asItem;
+            //qDebug() <<  iCitacRow  << QChar(64+iCitacFields) << ":" << asItem;
         }
     }
 
@@ -327,7 +336,8 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
      db_Req = QSqlDatabase::addDatabase("QSQLITE","sqlite_connection");
      db_Req.setDatabaseName(":memory:");
      bool boGenResult = db_Req.open();
-     qDebug() << "opendb" << boGenResult;
+     Q_UNUSED(boGenResult);
+     //qDebug() << "opendb" << boGenResult;
 
      modelOld =  new QSqlTableModel(this, db_Req);
      modelNew =  new QSqlTableModel(this, db_Req);
@@ -750,7 +760,9 @@ void MainWindow::on_btnCompare_clicked()
 
 
     //Load the new document or convert it from csv file
+    qDebug() << __LINE__;
     QXlsx::Document  newReqDoc(fileName_NewReq);
+    qDebug() << __LINE__;
 
     if(QFileInfo(fileName_NewReq).suffix().toLower() == "csv")
     {
@@ -906,16 +918,12 @@ void MainWindow::on_btnCompare_clicked()
       QString asTemp = getCellValue(kn_HeaderRow, col, newReqDoc, true);
       if (ui->cb_DetectOriginalID->isChecked())
       {
-         QString asSimple = asTemp.simplified();
-         asSimple = asSimple.toLower();
-         asSimple.replace(" ","");
-         if(asSimple.contains("idoriginal")) asTemp = "ID Original (DXL)";
-
+         if(ignoreWhiteCaseAndSpaces(asTemp).contains("idoriginal")) asTemp = "ID Original (DXL)";
       }
       lstNewHeaders << asTemp;
       mapNewHeaders[asTemp] = col;
 
-      if(ignoreWhiteAndCase(asTemp) == "object type")
+      if(ignoreWhiteCaseAndSpaces(asTemp).contains("objecttype"))
       {
         iNewColObjectType = col;
       }
@@ -932,16 +940,13 @@ void MainWindow::on_btnCompare_clicked()
         QString asTemp = getCellValue(kn_HeaderRow, col, oldReqDoc, true);
         if (ui->cb_DetectOriginalID->isChecked())
         {
-            QString asSimple = asTemp.simplified();
-            asSimple = asSimple.toLower();
-            asSimple.replace(" ","");
-            if(asSimple.contains("idoriginal")) asTemp = "ID Original (DXL)";
+            if(ignoreWhiteCaseAndSpaces(asTemp).contains("idoriginal")) asTemp = "ID Original (DXL)";
 
         }
         lstOldHeaders << asTemp;
         mapOldHeaders[asTemp] = col;
 
-        if(ignoreWhiteAndCase(asTemp) == "object type")
+        if(ignoreWhiteCaseAndSpaces(asTemp).contains("objecttype"))
         {
           iOldColObjectType = col;
         }
@@ -979,11 +984,11 @@ void MainWindow::on_btnCompare_clicked()
     ui->listWidget_oldColumns->clear();
     boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tOLD");
     boGenResult = dbQuery.exec("CREATE TABLE tOLD (rowid INTEGER PRIMARY KEY)");
-    qDebug() <<"Create" << boGenResult;
+    //qDebug() <<"Create" << boGenResult;
     foreach (QString asColumnName, lstOldHeaders)
     {
        boGenResult = dbQuery.exec("ALTER TABLE tOLD ADD \""+asColumnName+"\" VARCHAR" );
-       qDebug() <<"Add" << asColumnName << boGenResult;
+       //qDebug() <<"Add" << asColumnName << boGenResult;
        ui->listWidget_oldColumns->addItem(asColumnName);
     }
 
@@ -1007,10 +1012,10 @@ void MainWindow::on_btnCompare_clicked()
         asValues = asValues.left(asValues.lastIndexOf(","));
 
         QString asQueryString = "INSERT INTO tOLD (" +asColumns+ ") values(" + asValues + ")";
-        qDebug() << asQueryString;
+        //qDebug() << asQueryString;
         boGenResult = dbQuery.exec(asQueryString);
         if(!boGenResult) boInsertedOK = false;
-        qDebug() <<"Insert" << boGenResult;
+        //qDebug() <<"Insert" << boGenResult;
 
     }
 
@@ -1049,11 +1054,11 @@ void MainWindow::on_btnCompare_clicked()
     ui->listWidget_newColumns->clear();
     boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tNEW");
     boGenResult = dbQuery.exec("CREATE TABLE tNEW (rowid INTEGER PRIMARY KEY)");
-    qDebug() <<"Create" << boGenResult;
+    //qDebug() <<"Create" << boGenResult;
     foreach (QString asColumnName, lstNewHeaders)
     {
        boGenResult = dbQuery.exec("ALTER TABLE tNEW ADD \""+asColumnName+"\" VARCHAR" );
-       qDebug() <<"Add" << asColumnName << boGenResult;
+       //qDebug() <<"Add" << asColumnName << boGenResult;
        ui->listWidget_newColumns->addItem(asColumnName);
     }
 
@@ -1078,10 +1083,10 @@ void MainWindow::on_btnCompare_clicked()
       asValues = asValues.left(asValues.lastIndexOf(","));
 
       QString asQueryString = "INSERT INTO tNEW (" +asColumns+ ") values(" + asValues + ")";
-      qDebug() << asQueryString;
+      //qDebug() << asQueryString;
       boGenResult = dbQuery.exec(asQueryString);
       if(!boGenResult) boInsertedOK = false;
-      qDebug() <<"Insert" << boGenResult;
+      //qDebug() <<"Insert" << boGenResult;
 
     }
 
@@ -1178,9 +1183,9 @@ void MainWindow::on_btnCompare_clicked()
        int iOldReqID      = -1; //TODO
        Q_UNUSED(iOldReqID)
 
-       //FOR CURRENT ITEM IN THE OLF FILE CHECK EVERY ITEM IN NEW FILE
+       //FOR CURRENT ITEM IN THE OLD FILE CHECK EVERY ITEM IN NEW FILE
        //and compare with every row in new file..
-       bool bo_idFound = false;
+       bool bo_idOldFound = false;
        for(int newRow = kn_FistDataRow; newRow <= newLastRow; ++newRow)
        {
          QString asNewReqIDForCompare = getCellValue(newRow, kn_ReqIDCol, newReqDoc, true);
@@ -1260,8 +1265,8 @@ void MainWindow::on_btnCompare_clicked()
          //qDebug() << "1" << asOldReqID << asNewReqID << asNewReqIDForCompare;
          if(asOldReqID == asNewReqIDForCompare)
          {
-             qDebug() << "2" << asOldReqID << asNewReqID << asNewReqIDForCompare;
-             bo_idFound = true;
+             //qDebug() << "2" << asOldReqID << asNewReqID << asNewReqIDForCompare;
+             bo_idOldFound = true;
              bool boSameReq = false;
              //and now check every column which is in both files.. //TODO maybe better in at least one!!
              foreach (QString asHeader, lstNewOldHeader)
@@ -1278,6 +1283,7 @@ void MainWindow::on_btnCompare_clicked()
                    if(asHeader.contains("ID Original", Qt::CaseInsensitive)) continue;
                    if(asHeader.contains("Source",      Qt::CaseInsensitive)) continue;
                    if(asHeader.contains("GUID",        Qt::CaseInsensitive)) continue;
+                   if(asHeader.contains("Preview",     Qt::CaseInsensitive)) continue;
 
                 }
 
@@ -1285,6 +1291,12 @@ void MainWindow::on_btnCompare_clicked()
                 {
                    if(asHeader == "ID") continue;
                 }
+
+                if(ui->cb_TextOnly->isChecked())
+                {
+                   if(asHeader.toLower() != "text") continue;
+                }
+
 
                 QString asNewColValue =  getCellValue(newRow, mapNewHeaders[asHeader], newReqDoc, true);
                 QString asOldColValue =  getCellValue(oldRow, mapOldHeaders[asHeader], oldReqDoc, true);
@@ -1394,7 +1406,7 @@ void MainWindow::on_btnCompare_clicked()
        //not found in new - only in old req
        if(!ui->cb_HideMissing->isChecked())
        {
-           if(!bo_idFound)
+           if(!bo_idOldFound)
            {
                //qDebug() << "not in new file:";
                //qDebug() << asOldReqID;
@@ -1409,8 +1421,66 @@ void MainWindow::on_btnCompare_clicked()
     }//for (int oldRow = kn_FistDataRow; oldRow <= oldLastRow; ++oldRow)
 
     //TO DO CHECK
-    QStringList lstNewReqIDsOnly =  (QSet<QString>(lstNewReqIDs.begin(), lstNewReqIDs.end())
+
+    //Find new without reference to OLD or mising in OLD
+    QStringList lstNewReqIDsOnly;
+    lstNewReqIDsOnly.clear();
+
+    if (ui->cb_UseOriginalID->isChecked())
+    {
+        for(int newRow = kn_FistDataRow; newRow <= newLastRow; ++newRow)
+        {
+
+          QString asIDOrigin;
+          asIDOrigin.clear();
+          QString asNewReqID = getCellValue(newRow, kn_ReqIDCol, newReqDoc, true);
+          //ignore project prefix
+          if(ui->cb_IgnoreProject->isChecked())
+          {
+               asNewReqID = asNewReqID.remove(0, asNewReqID.indexOf("TSAnS"));
+          }
+          //real new ID
+
+
+          int iMappedColumn = mapNewHeaders["ID Original (DXL)"];
+          if(iMappedColumn > 0)
+          {
+            asIDOrigin = getCellValue(newRow, iMappedColumn, newReqDoc, true);
+          }
+          else
+          {
+            asIDOrigin.clear();
+          }
+
+
+          if(ui->cb_IgnoreProject->isChecked())
+          {
+             asIDOrigin = asIDOrigin.remove(0, asIDOrigin.indexOf("TSAnS"));
+          }
+
+          //if asIDOrigin is missing or set to N/A add to new list
+           if(!lstOldReqIDs.contains(asIDOrigin))
+          {
+             lstNewReqIDsOnly << asNewReqID;
+
+          }
+
+
+
+
+        }//for(int newRow = kn_FistDataRow; newRow <= newLastRow; ++newRow)
+
+    }
+    else
+    {
+        lstNewReqIDsOnly =  (QSet<QString>(lstNewReqIDs.begin(), lstNewReqIDs.end())
                                      .subtract(QSet<QString>(lstOldReqIDs.begin(), lstOldReqIDs.end()))).values();
+    }
+
+    qDebug() << "new: " << lstNewReqIDs;
+    qDebug() << "old: " << lstOldReqIDs;
+    qDebug() << "newonly: " << lstNewReqIDsOnly;
+
 
     lstNewReqIDsOnly.sort();
 
@@ -1477,6 +1547,7 @@ void MainWindow::on_btnCompare_clicked()
     if(ui->cb_HideNew->isChecked())             asCompareCondition += ":Hide New:";
     if(ui->cb_UseOriginalID->isChecked())       asCompareCondition += ":Use Original ID:";
     if(ui->cb_DetectOriginalID->isChecked())    asCompareCondition += ":Detect Original ID:";
+    if(ui->cb_TextOnly->isChecked())             asCompareCondition += ":Text Only:";
     if(boBatchProcessing)                       asCompareCondition += ":Batch Processing:";
 
 //Try to find if some req with differnt ID did not match in some parts
