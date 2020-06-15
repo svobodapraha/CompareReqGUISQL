@@ -112,6 +112,14 @@ private:
     QSqlTableModel *modelOld;
     QSqlQueryModel *modelUserQuery;
     void addTextToQueryLine(QString asToAdd);
+
+// statistic
+    int iStatisticOldFile;
+    int iStatisticNewFile;
+    int iStatisticChangedDiff;
+    int iStatisticChangedReq;
+    int iStatisticNewReq;
+    int iStatisticMissingReq;
 };
 
 

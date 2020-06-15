@@ -30,9 +30,13 @@ FORMS    += mainwindow.ui \
     detailview.ui
 
 # The application version
-VERSION = 1.6.2.0
+VERSION = 1.6.3.0
 
 # Define the preprocessor macro to get the application version in our application.
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
+
+#supress debug in release mode
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
 

@@ -201,6 +201,10 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
 
     //display version
     setWindowTitle(QFileInfo( QCoreApplication::applicationFilePath() ).completeBaseName() + " V: " + QApplication::applicationVersion());
+    ui->plainTextEdit_Statistic->setReadOnly(true);
+
+
+
 
     //other forms
     detailView = new DetailView(this);
@@ -350,6 +354,15 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
      ui->tabWidget_Results->setCurrentWidget(ui->pageCompare);
 
 
+     //init statistic Variables
+     iStatisticOldFile      = -1;
+     iStatisticNewFile      = -1;
+     iStatisticChangedDiff  = -1;
+     iStatisticChangedReq   = -1;
+     iStatisticNewReq       = -1;
+     iStatisticMissingReq       = -1;
+
+
 }
 
 
@@ -394,6 +407,11 @@ void MainWindow::EmptyChangesTable()
     modelUserQuery->clear();
     ui->tableView_Query->setModel(modelUserQuery);
 
+    //clear statistic list
+    ui->plainTextEdit_Statistic->clear();
+    ui->plainTextEdit_Statistic->appendPlainText("STATISTIC WILL");
+    ui->plainTextEdit_Statistic->appendPlainText("BE UPDATED");
+    ui->plainTextEdit_Statistic->appendPlainText("AFTER WRITE");
 
 
 }
@@ -433,6 +451,12 @@ void MainWindow::on_btnWrite_clicked()
 
     //write result
     QXlsx::Document reportDoc;
+
+    //add document properties
+    reportDoc.setDocumentProperty("creator", asUserAndHostName);
+    reportDoc.setDocumentProperty("description", "Requirements Comparsion");
+
+
     reportDoc.addSheet("TABLE");
 
     int iReportCurrentRow = kn_ReportFirstInfoRow;
@@ -467,6 +491,11 @@ void MainWindow::on_btnWrite_clicked()
      iReportCurrentRow++;
      int iReqWritten = 0;
 
+     QSet<QString> setStatisticReq;
+     setStatisticReq.clear();
+     iStatisticNewReq          = 0;
+     iStatisticMissingReq      = 0;
+     iStatisticChangedDiff     = 0;
      //copy from table to excel sheet "TABLE"
      for (int irow = 0; irow < ui->tableWidget_Changes->rowCount(); ++irow)
      {
@@ -478,7 +507,25 @@ void MainWindow::on_btnWrite_clicked()
        }
        iReqWritten++;
 
+       //statistic
+       if(ui->tableWidget_Changes->item(irow, col_infotable_status)->text().toLower().contains("changed"))
+       {
+         iStatisticChangedDiff++;
+         //eliminate same requirement (with differencies in more column)
+         setStatisticReq << ui->tableWidget_Changes->item(irow, col_infotable_requirement)->text();
+       }
 
+       if(ui->tableWidget_Changes->item(irow, col_infotable_status)->text().toLower().contains("missing"))
+       {
+         iStatisticMissingReq++;
+       }
+
+       if(ui->tableWidget_Changes->item(irow, col_infotable_status)->text().toLower().contains("new"))
+       {
+         iStatisticNewReq++;
+       }
+
+       //write to excel
        for (int icol = 0; icol < ui->tableWidget_Changes->columnCount(); ++icol)
        {
          int iExcelCol = icol;
@@ -495,27 +542,41 @@ void MainWindow::on_btnWrite_clicked()
 
 
            QString asTableContent = ui->tableWidget_Changes->item(irow, icol)->text();
-           reportDoc.write(iReportCurrentRow, iExcelCol, asTableContent, cellFormat);
-
-
+           reportDoc.write(iReportCurrentRow, iExcelCol, asTableContent, cellFormat);                   
          }
 
        }
        iReportCurrentRow++;
      }
 
+     iStatisticChangedReq = setStatisticReq.count();
+     //fill statistic list
+     ui->plainTextEdit_Statistic->clear();
+     ui->plainTextEdit_Statistic->appendPlainText(QString("in Old File: %1").arg(iStatisticOldFile));
+     ui->plainTextEdit_Statistic->appendPlainText(QString("in New File: %1").arg(iStatisticNewFile));
+     ui->plainTextEdit_Statistic->appendPlainText(QString("Differencies: %1").arg(iStatisticChangedDiff));
+     ui->plainTextEdit_Statistic->appendPlainText(QString("Changed Req: %1").arg(iStatisticChangedReq));
+     ui->plainTextEdit_Statistic->appendPlainText(QString("New Req: %1").arg(iStatisticNewReq));
+     ui->plainTextEdit_Statistic->appendPlainText(QString("Missing Req: %1").arg(iStatisticMissingReq));
+
+     qDebug() << ui->plainTextEdit_Statistic->toPlainText().replace("\r","").replace("\n","::");
 
      QString asReqWritten = "";
      if (iReqWritten < ui->tableWidget_Changes->rowCount())
      {
-         asReqWritten = QString("Only %1 requirements of %2 written").arg(iReqWritten).arg(ui->tableWidget_Changes->rowCount());
+         asReqWritten = QString("Only %1 table row of %2 written").arg(iReqWritten).arg(ui->tableWidget_Changes->rowCount());
      }
      else
      {
-         asReqWritten = QString("All %1 requirements written").arg(ui->tableWidget_Changes->rowCount());
+         asReqWritten = QString("All %1 table row written").arg(ui->tableWidget_Changes->rowCount());
      }
 
-     reportDoc.write(iRowWhereToWriteNumberOfReqWritten, 1, asReqWritten);
+     reportDoc.write(iRowWhereToWriteNumberOfReqWritten, 1,
+                     asReqWritten + "::"+ui->plainTextEdit_Statistic->toPlainText().replace("\r","").replace("\n","::"));
+
+
+
+
 
 
      //write excel sheet "EASY TO READ"
@@ -993,6 +1054,7 @@ void MainWindow::on_btnCompare_clicked()
     }
 
     //insert data to OLD
+    iStatisticOldFile = oldLastRow - kn_FistDataRow + 1;
     bool boInsertedOK = true;
     for (int oldRow = kn_FistDataRow; oldRow <= oldLastRow; ++oldRow)
     {
@@ -1064,6 +1126,7 @@ void MainWindow::on_btnCompare_clicked()
 
 
     //insert data NEW
+    iStatisticNewFile = newLastRow - kn_FistDataRow + 1;
     boInsertedOK = true;
     for (int newRow = kn_FistDataRow; newRow <= newLastRow; ++newRow)
     {
