@@ -24,6 +24,7 @@
 #include "xlsxworkbook.h"
 
 #include "detailview.h"
+#include "managequeris.h"
 #include <windows.h>
 
 
@@ -82,22 +83,26 @@ private slots:
 
     void on_btn_ClearQueryLine_clicked();
 
+    void on_btn_ManageQueries_clicked();
+
 private:
     Ui::MainWindow *ui;
 
 private:
-    QString fileName_NewReq;
-    QString fileName_OldReq;
+    QString fileName_NewReq, asNewSheetName;
+    QString fileName_OldReq, asOldSheetName;
     QString fileName_OldReqCor;
     QString newReqFileLastPath;
     QString oldReqFileLastPath;
     QString fileName_Report;
     QString asCompareCondition;
+    QString asQueryTextToReport;
 
 
     QSettings *iniSettings;
     void EmptyChangesTable();
     DetailView *detailView;
+    ManageQueris *manageStoredQueries;
 
     void setChangesTableNotEditable();
     void checkAll(bool boCheck);

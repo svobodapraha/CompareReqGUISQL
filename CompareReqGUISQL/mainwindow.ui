@@ -41,6 +41,16 @@
          <item>
           <widget class="QLineEdit" name="lineEdit_NewReq"/>
          </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_SheetsNew">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -54,6 +64,16 @@
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_OldReq"/>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboBox_SheetsOld">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -111,7 +131,14 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
-              <widget class="QLineEdit" name="lineEdit_Query"/>
+              <widget class="QPlainTextEdit" name="plainTextEdit_Query">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>50</height>
+                </size>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -127,7 +154,7 @@
                 <widget class="QPushButton" name="btn_ClearQueryLine">
                  <property name="maximumSize">
                   <size>
-                   <width>80</width>
+                   <width>60</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -140,12 +167,25 @@
                 <widget class="QPushButton" name="btn_ExecQuery">
                  <property name="maximumSize">
                   <size>
-                   <width>80</width>
+                   <width>60</width>
                    <height>16777215</height>
                   </size>
                  </property>
                  <property name="text">
                   <string>EXEC</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_ManageQueries">
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>MANAGE</string>
                  </property>
                 </widget>
                </item>
@@ -385,6 +425,9 @@
             <string>WRITE</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_ReportSuffix"/>
          </item>
         </layout>
        </item>

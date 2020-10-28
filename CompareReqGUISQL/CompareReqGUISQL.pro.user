@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.12.1, 2020-06-15T08:22:41. -->
+<!-- Written by QtCreator 4.12.4, 2020-10-27T18:15:46. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
-  <value type="QByteArray">{eaa6d3b3-ee4a-4c12-a558-1cbb73c491a5}</value>
+  <value type="QByteArray">{9cc857fd-6516-4e08-9bc8-a3fdcf2d0017}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -83,8 +83,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">0</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\UserData\z0044u8k\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/UserData/z0044u8k/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\vlada_data\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/vlada_data/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -134,8 +134,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\UserData\z0044u8k\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/UserData/z0044u8k/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\vlada_data\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/vlada_data/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -185,8 +185,8 @@
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.2">
     <value type="bool">true</value>
     <value type="int" key="EnableQmlDebugging">0</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\UserData\z0044u8k\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/UserData/z0044u8k/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\vlada_data\CompareReqGUISQL\build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/vlada_data/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Profile</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
@@ -308,8 +308,8 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/UserData/z0044u8k/CompareReqGUISQL/CompareReqGUISQL/CompareReqGUISQL.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/UserData/z0044u8k/CompareReqGUISQL/CompareReqGUISQL/CompareReqGUISQL.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:C:/vlada_data/CompareReqGUISQL/CompareReqGUISQL/CompareReqGUISQL.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/vlada_data/CompareReqGUISQL/CompareReqGUISQL/CompareReqGUISQL.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
@@ -320,7 +320,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/UserData/z0044u8k/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/vlada_data/CompareReqGUISQL/build-CompareReqGUISQL-Desktop_Qt_5_15_0_MinGW_32_bit-Debug</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

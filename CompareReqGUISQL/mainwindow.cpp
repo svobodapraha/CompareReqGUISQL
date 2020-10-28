@@ -208,6 +208,9 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
 
     //other forms
     detailView = new DetailView(this);
+    manageStoredQueries = new ManageQueris(this);
+
+
 
     //init.
     newReqFileLastPath = ".//";
@@ -217,6 +220,11 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
     //ini files
     QString asIniFileName = QFileInfo( QCoreApplication::applicationFilePath() ).filePath().section(".",0,0)+".ini";
     iniSettings = new QSettings(asIniFileName, QSettings::IniFormat);
+    //in other forms:
+    manageStoredQueries->currentSettings = iniSettings;
+
+
+
     QVariant VarTemp;
 
 
@@ -339,6 +347,8 @@ MainWindow::MainWindow(QStringList arguments, QWidget *parent) :
      //Prepare SQL Lite database
      db_Req = QSqlDatabase::addDatabase("QSQLITE","sqlite_connection");
      db_Req.setDatabaseName(":memory:");
+     db_Req.close();
+     db_Req.open();
      bool boGenResult = db_Req.open();
      Q_UNUSED(boGenResult);
      //qDebug() << "opendb" << boGenResult;
@@ -399,8 +409,8 @@ void MainWindow::EmptyChangesTable()
      ui->btnWrite->setEnabled(false);
 
     QSqlQuery dbQuery(db_Req);
-    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tOLD");
-    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tNEW");
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS `tOLD`");
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS `tNEW`");
     ui->listWidget_oldColumns->clear();
     ui->listWidget_newColumns->clear();
     ui->listWidget_Commands->clear();
@@ -680,7 +690,8 @@ void MainWindow::on_btnWrite_clicked()
     reportDoc.selectSheet("TABLE");
     if(true)
     {
-       if(!reportDoc.saveAs(fileName_Report))
+       QString fileName_Report_complet = fileName_Report + ui->lineEdit_ReportSuffix->text() + ".xlsx";
+       if(!reportDoc.saveAs(fileName_Report_complet))
        {
 
            if (!boBatchProcessing)
@@ -699,7 +710,7 @@ void MainWindow::on_btnWrite_clicked()
 
            if (!boBatchProcessing)
            {
-               QMessageBox::information(this, "Written", fileName_Report+"\r\n\r\n"+asReqWritten, QMessageBox::Ok);
+               QMessageBox::information(this, "Written", fileName_Report_complet+"\r\n\r\n"+asReqWritten, QMessageBox::Ok);
            }
            else
            {
@@ -727,19 +738,37 @@ void MainWindow::on_btnWrite_clicked()
 void MainWindow::on_btnNewReq_clicked()
 {
     EmptyChangesTable();
+    ui->comboBox_SheetsNew->clear();
+    //delete sheet names
+    asNewSheetName.clear();
+
+
+
+
     // local only, it is use later from edit window
     QString fileName_NewReq = QFileDialog::getOpenFileName
     (
       this,
       "Open New Requirements",
       newReqFileLastPath,
-      "Excel Files (*.xlsx; *.csv)"
+      "Excel Files (*.xlsx;*.xlsm; *.csv)"
     );
 
     if(!fileName_NewReq.isEmpty() && !fileName_NewReq.isNull())
     {
         ui->lineEdit_NewReq->setText(fileName_NewReq);
         newReqFileLastPath = QFileInfo(fileName_NewReq).path();
+        if (QFileInfo(fileName_NewReq).suffix().toLower().contains("xls"))
+        {
+            QXlsx::Document  docToListSheets(fileName_NewReq);
+            foreach(QString name, docToListSheets.sheetNames())
+            {
+                //qDebug() << "new sheets" <<  name;
+                ui->comboBox_SheetsNew->addItem(name);
+            }
+
+        }
+
     }
     else
     {
@@ -755,24 +784,43 @@ void MainWindow::on_lineEdit_NewReq_textEdited(const QString &arg1)
     Q_UNUSED(arg1)
     //new files - table is not valid for them
     EmptyChangesTable();
+    ui->comboBox_SheetsNew->clear();
+    asNewSheetName.clear();
+
+
 }
 
 void MainWindow::on_btnOldReq_clicked()
 {
     EmptyChangesTable();
+    ui->comboBox_SheetsOld->clear();
+    //delete sheet names
+    asOldSheetName.clear();
+
     // local only, it is use later from edit window
     QString fileName_OldReq = QFileDialog::getOpenFileName
     (
       this,
       "Open Old Requirements",
       oldReqFileLastPath,
-      "Excel Files (*.xlsx; *.csv)"
+      "Excel Files (*.xlsx;*.xlsm; *.csv)"
     );
 
     if(!fileName_OldReq.isEmpty() && !fileName_OldReq.isNull())
     {
         ui->lineEdit_OldReq->setText(fileName_OldReq);
         oldReqFileLastPath = QFileInfo(fileName_OldReq).path();
+        //load sheets
+        if (QFileInfo(fileName_OldReq).suffix().toLower().contains("xls"))
+        {
+           QXlsx::Document  docToListSheets(fileName_OldReq);
+           foreach(QString name, docToListSheets.sheetNames())
+            {
+               //qDebug() << "old sheets" <<  name;
+               ui->comboBox_SheetsOld->addItem(name);
+            }
+
+        }
     }
     else
     {
@@ -785,6 +833,9 @@ void MainWindow::on_lineEdit_OldReq_textEdited(const QString &arg1)
       Q_UNUSED(arg1)
     //new files - table is not valid for them
       EmptyChangesTable();
+      ui->comboBox_SheetsOld->clear();
+      asOldSheetName.clear();
+
 }
 
 void MainWindow::on_btnCompare_clicked()
@@ -860,6 +911,14 @@ void MainWindow::on_btnCompare_clicked()
        }
     }
 
+
+    if (ui->comboBox_SheetsNew->count() > 1)   //if only one, then it is default...
+    {
+        newReqDoc.selectSheet(ui->comboBox_SheetsNew->currentText());
+    }
+    asNewSheetName = newReqDoc.currentSheet()->sheetName();
+
+
     //newReqDoc.saveAs("pn.xlsx");  //DEBUG CODE
 
     //Load the old document or convert it from csv file
@@ -904,6 +963,11 @@ void MainWindow::on_btnCompare_clicked()
 
 
 
+    if (ui->comboBox_SheetsOld->count() > 1)   //if only one, then it is default...
+    {
+        oldReqDoc.selectSheet(ui->comboBox_SheetsOld->currentText());
+    }
+    asOldSheetName = oldReqDoc.currentSheet()->sheetName();
 
 
     //save paths to ini file
@@ -915,8 +979,9 @@ void MainWindow::on_btnCompare_clicked()
     fileName_Report =   QFileInfo(fileName_NewReq).path() + "/" +
                         QFileInfo(fileName_NewReq).completeBaseName() +
                         "_to_" +
-                        QFileInfo(fileName_OldReq).completeBaseName()+
-                        ".xlsx";
+                        QFileInfo(fileName_OldReq).completeBaseName();
+
+
 
     fileName_OldReqCor = QFileInfo(fileName_OldReq).path() + "/" +
                          QFileInfo(fileName_OldReq).completeBaseName()+ 
@@ -977,6 +1042,7 @@ void MainWindow::on_btnCompare_clicked()
     for(int col= kn_ReqIDCol; col <= newLastCol; col++)
     {
       QString asTemp = getCellValue(kn_HeaderRow, col, newReqDoc, true);
+      asTemp.replace("."," ");
       if (ui->cb_DetectOriginalID->isChecked())
       {
          if(ignoreWhiteCaseAndSpaces(asTemp).contains("idoriginal")) asTemp = "ID Original (DXL)";
@@ -999,6 +1065,7 @@ void MainWindow::on_btnCompare_clicked()
     for(int col= kn_ReqIDCol; col <= oldLastCol; col++)
     {
         QString asTemp = getCellValue(kn_HeaderRow, col, oldReqDoc, true);
+        asTemp.replace("."," ");
         if (ui->cb_DetectOriginalID->isChecked())
         {
             if(ignoreWhiteCaseAndSpaces(asTemp).contains("idoriginal")) asTemp = "ID Original (DXL)";
@@ -1038,24 +1105,44 @@ void MainWindow::on_btnCompare_clicked()
     QStringList lstOldReqIDs;
     lstOldReqIDs.clear();
 
+
+    db_Req.close();
+    db_Req.open();
+
     //Create database table OLD
     QSqlQuery dbQuery(db_Req);
+    modelOld->revertAll();
+    modelOld->clear();
+    modelNew->revertAll();
+    modelNew->clear();
+    modelUserQuery->clear();
+
 
     ui->tableView_Old->setSortingEnabled(false);
     ui->listWidget_oldColumns->clear();
-    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tOLD");
-    boGenResult = dbQuery.exec("CREATE TABLE tOLD (rowid INTEGER PRIMARY KEY)");
-    //qDebug() <<"Create" << boGenResult;
+    bool boInsertedOK = true;
+
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS `tOLD`");
+    if(!boGenResult) boInsertedOK = false;
+    //qDebug() <<"Old Drop" << boGenResult << dbQuery.lastError().text();
+
+
+    boGenResult = dbQuery.exec("CREATE TABLE `tOLD` (rowid INTEGER PRIMARY KEY)");
+    if(!boGenResult) boInsertedOK = false;
+    //qDebug() <<"Old Create" << boGenResult << dbQuery.lastError().text();
+
+    int iOldColDeb = 0;
     foreach (QString asColumnName, lstOldHeaders)
     {
-       boGenResult = dbQuery.exec("ALTER TABLE tOLD ADD \""+asColumnName+"\" VARCHAR" );
-       //qDebug() <<"Add" << asColumnName << boGenResult;
+       boGenResult = dbQuery.exec("ALTER TABLE `tOLD` ADD \""+asColumnName+"\" VARCHAR" );
+       if(!boGenResult) boInsertedOK = false;
+       //qDebug() <<"Old Add Col" << asColumnName << boGenResult << dbQuery.lastError().text();
        ui->listWidget_oldColumns->addItem(asColumnName);
+       iOldColDeb++;
     }
 
     //insert data to OLD
     iStatisticOldFile = oldLastRow - kn_FistDataRow + 1;
-    bool boInsertedOK = true;
     for (int oldRow = kn_FistDataRow; oldRow <= oldLastRow; ++oldRow)
     {
         QString asColumns = "";
@@ -1073,8 +1160,8 @@ void MainWindow::on_btnCompare_clicked()
         asColumns = asColumns.left(asColumns.lastIndexOf(","));
         asValues = asValues.left(asValues.lastIndexOf(","));
 
-        QString asQueryString = "INSERT INTO tOLD (" +asColumns+ ") values(" + asValues + ")";
-        //qDebug() << asQueryString;
+        QString asQueryString = "INSERT INTO `tOLD` (" +asColumns+ ") values(" + asValues + ")";
+        //qDebug() << "old: " << asQueryString;
         boGenResult = dbQuery.exec(asQueryString);
         if(!boGenResult) boInsertedOK = false;
         //qDebug() <<"Insert" << boGenResult;
@@ -1097,6 +1184,7 @@ void MainWindow::on_btnCompare_clicked()
 
     //show in table OLD
     modelOld->setTable("tOLD");
+    modelOld->setFilter("");
     modelOld->select();
     ui->tableView_Old->setModel(modelOld);
 
@@ -1114,20 +1202,33 @@ void MainWindow::on_btnCompare_clicked()
     //Create database table NEW
     ui->tableView_New->setSortingEnabled(false);
     ui->listWidget_newColumns->clear();
-    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS tNEW");
-    boGenResult = dbQuery.exec("CREATE TABLE tNEW (rowid INTEGER PRIMARY KEY)");
-    //qDebug() <<"Create" << boGenResult;
+    boInsertedOK = true;
+
+
+    boGenResult = dbQuery.exec("DROP TABLE IF EXISTS `tNEW`");
+    if(!boGenResult) boInsertedOK = false;
+    //qDebug() << "New Drop" << boGenResult << dbQuery.lastError().text();
+
+
+
+    boGenResult = dbQuery.exec("CREATE TABLE `tNEW` (rowid INTEGER PRIMARY KEY)");
+    if(!boGenResult) boInsertedOK = false;
+    //qDebug() <<"New Create" << boGenResult << dbQuery.lastError().text();
+
+
+    int iNewColDeb = 0;
     foreach (QString asColumnName, lstNewHeaders)
     {
-       boGenResult = dbQuery.exec("ALTER TABLE tNEW ADD \""+asColumnName+"\" VARCHAR" );
-       //qDebug() <<"Add" << asColumnName << boGenResult;
+       boGenResult = dbQuery.exec("ALTER TABLE `tNEW` ADD \""+asColumnName+"\" VARCHAR" );
+       if(!boGenResult) boInsertedOK = false;
+       //qDebug() <<"New Add Col" << asColumnName << boGenResult << dbQuery.lastError().text();
        ui->listWidget_newColumns->addItem(asColumnName);
+       iNewColDeb++;
     }
 
 
     //insert data NEW
     iStatisticNewFile = newLastRow - kn_FistDataRow + 1;
-    boInsertedOK = true;
     for (int newRow = kn_FistDataRow; newRow <= newLastRow; ++newRow)
     {
       QString asColumns = "";
@@ -1145,8 +1246,8 @@ void MainWindow::on_btnCompare_clicked()
       asColumns = asColumns.left(asColumns.lastIndexOf(","));
       asValues = asValues.left(asValues.lastIndexOf(","));
 
-      QString asQueryString = "INSERT INTO tNEW (" +asColumns+ ") values(" + asValues + ")";
-      //qDebug() << asQueryString;
+      QString asQueryString = "INSERT INTO `tNEW` (" +asColumns+ ") values(" + asValues + ")";
+      //qDebug() << "new: " << asQueryString;
       boGenResult = dbQuery.exec(asQueryString);
       if(!boGenResult) boInsertedOK = false;
       //qDebug() <<"Insert" << boGenResult;
@@ -1169,7 +1270,9 @@ void MainWindow::on_btnCompare_clicked()
 
     //show in table NEW
     modelNew->setTable("tNEW");
+    modelNew->setFilter("");
     modelNew->select();
+    //qDebug() << "modelNew->rowCount()" << modelNew->rowCount() << iNewColDeb << newLastRow;
     ui->tableView_New->setModel(modelNew);
 
     ui->tableView_New->resizeColumnsToContents();
@@ -1807,9 +1910,10 @@ void MainWindow::on_btn_SortReq_clicked()
 void MainWindow::on_btn_ExecQuery_clicked()
 {
 
+    asQueryTextToReport.clear();
     ui->tableView_Query->setSortingEnabled(false);
 
-    QString asQueryText = ui->lineEdit_Query->text();
+    QString asQueryText = ui->plainTextEdit_Query->toPlainText();
     QSqlQuery userQuery(db_Req);
     bool boResult = userQuery.exec(asQueryText);
     if(!boResult)
@@ -1820,6 +1924,7 @@ void MainWindow::on_btn_ExecQuery_clicked()
     }
     else
     {
+      asQueryTextToReport = asQueryText;
       modelUserQuery->setQuery(userQuery);
       ui->tableView_Query->setModel(modelUserQuery);
       ui->tableView_Query->resizeColumnsToContents();
@@ -1855,10 +1960,21 @@ void MainWindow::on_listWidget_newColumns_itemClicked(QListWidgetItem *item)
 
 void MainWindow::addTextToQueryLine(QString asToAdd)
 {
-  ui->lineEdit_Query->insert(asToAdd + " ");
+  ui->plainTextEdit_Query->insertPlainText(asToAdd + " ");
 }
 
 void MainWindow::on_btn_ClearQueryLine_clicked()
 {
-   ui->lineEdit_Query->clear();
+   ui->plainTextEdit_Query->clear();
+}
+
+void MainWindow::on_btn_ManageQueries_clicked()
+{
+    manageStoredQueries->asCurrentQuery = ui->plainTextEdit_Query->toPlainText();
+    qDebug() << manageStoredQueries;
+    manageStoredQueries->exec();
+    if(!manageStoredQueries->asQueryToLoad.isEmpty())
+    {
+       ui->plainTextEdit_Query->setPlainText(manageStoredQueries->asQueryToLoad);
+    }
 }

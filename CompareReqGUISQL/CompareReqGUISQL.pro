@@ -21,16 +21,19 @@ include(../QXlsx/QXlsx.pri)
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    detailview.cpp
+    detailview.cpp \
+    managequeris.cpp
 
 HEADERS  += mainwindow.h \
-    detailview.h
+    detailview.h \
+    managequeris.h
 
 FORMS    += mainwindow.ui \
-    detailview.ui
+    detailview.ui \
+    managequeris.ui
 
 # The application version
-VERSION = 1.6.3.0
+VERSION = 1.7.0.0
 
 # Define the preprocessor macro to get the application version in our application.
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
