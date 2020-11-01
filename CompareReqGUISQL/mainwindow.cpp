@@ -476,8 +476,8 @@ void MainWindow::on_btnWrite_clicked()
                                           " V:" + QApplication::applicationVersion() +
                                           ", "  + asUserAndHostName);
     reportDoc.write(iReportCurrentRow++, 1, "generated on: " + QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss"));
-    reportDoc.write(iReportCurrentRow++, 1, "new file: " + fileName_NewReq);
-    reportDoc.write(iReportCurrentRow++, 1, "old file: " + fileName_OldReq);
+    reportDoc.write(iReportCurrentRow++, 1, "new file: " + fileName_NewReq  + ", sheet: " + asNewSheetName);
+    reportDoc.write(iReportCurrentRow++, 1, "old file: " + fileName_OldReq  + ", sheet: " + asOldSheetName);
     reportDoc.write(iReportCurrentRow++, 1, asCompareCondition);
     int iRowWhereToWriteNumberOfReqWritten = iReportCurrentRow++;
 
